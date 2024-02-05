@@ -30,21 +30,9 @@ Future<Object> signin(String phone, String password) async {
       'password': password,
     }),
   );
-  // print(response.body);
-  Map<String, dynamic> decode_option = jsonDecode(response.body);
 
-  if (response.statusCode == 200 && decode_option["newUser"] != null) {
-    // UserModel userData = UserModel.fromJson(decode_option["user"]);
-    UserModel user = UserModel.fromJson(decode_option["newUser"]);
-    String data = jsonEncode(user);
-    _prefs.createState("user", data);
-    _prefs.createState("userID", user.sId!);
-    // print(decode_option);
-    // print(data);
-    print("Login");
-  }
-  if (response.statusCode == 400) {
-    Get.snackbar("Log in failed", "Please Try again",
+  if (response.statusCode != 200) {
+    Get.snackbar("Failed", response.body,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
         margin: EdgeInsets.only(left: 1230),
@@ -52,16 +40,19 @@ Future<Object> signin(String phone, String password) async {
         backgroundColor: Colors.red,
         duration: Duration(seconds: 3),
         overlayColor: kPrimaryColor);
-  }
-  if (response.statusCode == 500) {
-    Get.snackbar("Failed", "Please Try again",
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        margin: EdgeInsets.only(left: 1230),
-        maxWidth: 300,
-        backgroundColor: Colors.red,
-        duration: Duration(seconds: 3),
-        overlayColor: kPrimaryColor);
+  } else {
+    Map<String, dynamic> decode_option = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && decode_option["newUser"] != null) {
+      // UserModel userData = UserModel.fromJson(decode_option["user"]);
+      UserModel user = UserModel.fromJson(decode_option["newUser"]);
+      String data = jsonEncode(user);
+      _prefs.createState("user", data);
+      _prefs.createState("userID", user.sId!);
+      // print(decode_option);
+      // print(data);
+      print("Login");
+    }
   }
   return response.statusCode;
 }
@@ -111,17 +102,16 @@ Future<Object> signup(
       if (email.isNotEmpty) 'email': email,
     }),
   );
-  Map<String, dynamic> decode_option = jsonDecode(response.body);
-  UserModel user = UserModel.fromJson(decode_option["savedUser"]);
-  String data = jsonEncode(user);
-  print(response.statusCode);
   if (response.statusCode == 200) {
+    Map<String, dynamic> decode_option = jsonDecode(response.body);
+    UserModel user = UserModel.fromJson(decode_option["savedUser"]);
+    String data = jsonEncode(user);
     _prefs.createState("user", data);
   } else {
-    Get.snackbar("Failed", "Please Try again",
+    Get.snackbar("Failed", response.body,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
-        margin: EdgeInsets.only(left: 1230),
+        margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
         maxWidth: 300,
         backgroundColor: Colors.red,
         duration: Duration(seconds: 3),
@@ -592,15 +582,12 @@ Future listTodo(String folderId, int page) async {
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
     var response = await http.post(
-      Uri.parse('http://localhost:3000/api/user/todo/list?page=${page}'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'auth-token': _userData.token!,
-      },
-      body: jsonEncode({
-        "folderId": folderId
-      })
-    );
+        Uri.parse('http://localhost:3000/api/user/todo/list?page=${page}'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'auth-token': _userData.token!,
+        },
+        body: jsonEncode({"folderId": folderId}));
     print(response.body);
     if (response.statusCode != 200) {
       return response.statusCode;
@@ -855,8 +842,16 @@ Future searchTrip(String search) async {
   }
 }
 
-Future createTrip(String title, String note, String startDate, String endDate, double? lat, double? lng,
-    String location, bool reminder, double progress) async {
+Future createTrip(
+    String title,
+    String note,
+    String startDate,
+    String endDate,
+    double? lat,
+    double? lng,
+    String location,
+    bool reminder,
+    double progress) async {
   var _user = await _prefs.readState("user");
   Map<String, dynamic> _data = jsonDecode(_user);
   UserModel _userData = UserModel.fromJson(_data);
@@ -974,9 +969,17 @@ Future searchAction(String search, String tripId) async {
   }
 }
 
-Future createAction(String title, String note, String startDate, String endDate,
-    String location, String tripId, bool reminder, double progress, String assignTo) async {
-      print(4);
+Future createAction(
+    String title,
+    String note,
+    String startDate,
+    String endDate,
+    String location,
+    String tripId,
+    bool reminder,
+    double progress,
+    String assignTo) async {
+  print(4);
   var _user = await _prefs.readState("user");
   Map<String, dynamic> _data = jsonDecode(_user);
   UserModel _userData = UserModel.fromJson(_data);
@@ -995,8 +998,7 @@ Future createAction(String title, String note, String startDate, String endDate,
       if (location.isNotEmpty) 'location': location,
       'reminder': reminder,
       'progress': progress,
-      if(assignTo.isNotEmpty) 'assignTo': assignTo,
-      
+      if (assignTo.isNotEmpty) 'assignTo': assignTo,
     }),
   );
   print(5);
@@ -1511,19 +1513,18 @@ Future updatePlanning(
 }
 
 Future createActionMeeting(
-  String meetingId,
-  String title,
-  String note,
-  String startDate,
-  String endDate,
-  String location,
-  String repeat,
-  String endRepeat,
-  String priority,
-  bool reminder,
-  double progress,
-  String assignTo
-) async {
+    String meetingId,
+    String title,
+    String note,
+    String startDate,
+    String endDate,
+    String location,
+    String repeat,
+    String endRepeat,
+    String priority,
+    bool reminder,
+    double progress,
+    String assignTo) async {
   var _user = await _prefs.readState("user");
   Map<String, dynamic> _data = jsonDecode(_user);
   UserModel _userData = UserModel.fromJson(_data);
@@ -1620,19 +1621,18 @@ Future updateActionMeeting(
 }
 
 Future createActionPlanning(
-  String planningId,
-  String title,
-  String note,
-  String startDate,
-  String endDate,
-  String location,
-  String repeat,
-  String endRepeat,
-  String priority,
-  bool reminder,
-  double progress,
-  String assignTo
-) async {
+    String planningId,
+    String title,
+    String note,
+    String startDate,
+    String endDate,
+    String location,
+    String repeat,
+    String endRepeat,
+    String priority,
+    bool reminder,
+    double progress,
+    String assignTo) async {
   var _user = await _prefs.readState("user");
   Map<String, dynamic> _data = jsonDecode(_user);
   UserModel _userData = UserModel.fromJson(_data);
@@ -1654,9 +1654,9 @@ Future createActionPlanning(
       if (priority.isNotEmpty) 'priority': priority,
       'reminder': reminder,
       'progress': progress,
-      if (assignTo.isNotEmpty) 'assignTo' : assignTo,
+      if (assignTo.isNotEmpty) 'assignTo': assignTo,
     }),
-  ); 
+  );
   if (response.statusCode == 200) {
     print("Created!");
     var decode_option = jsonDecode(response.body);
@@ -2017,13 +2017,13 @@ Future markActionPlanning(String planningId, String actionId, bool mark) async {
     return ActionPlanningModel.fromJson(decode_option['data']);
   } else {
     Get.snackbar("Failed", "Please Try again",
-      colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
-      margin: EdgeInsets.only(left: 1230),
-      maxWidth: 300,
-      backgroundColor: Colors.red,
-      duration: Duration(seconds: 3),
-      overlayColor: kPrimaryColor);
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        margin: EdgeInsets.only(left: 1230),
+        maxWidth: 300,
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 3),
+        overlayColor: kPrimaryColor);
   }
 }
 
@@ -2137,7 +2137,7 @@ Future shortTodo() async {
 }
 
 Future shortActionTrip() async {
-    try {
+  try {
     var _user = await _prefs.readState("user");
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
@@ -2305,7 +2305,7 @@ Future shortAllActionPlanning() async {
 }
 
 Future addUser(List<String> selectedUser, String tripId) async {
-    try {
+  try {
     var _user = await _prefs.readState("user");
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
@@ -2315,13 +2315,11 @@ Future addUser(List<String> selectedUser, String tripId) async {
         'Content-Type': 'application/json; charset=UTF-8',
         'auth-token': _userData.token!,
       },
-      body: jsonEncode({
-        "user": selectedUser
-      }),
+      body: jsonEncode({"user": selectedUser}),
     );
     if (response.statusCode == 200) {
-    var decode_option = jsonDecode(response.body);
-    return TripModel.fromJson(decode_option['data']);
+      var decode_option = jsonDecode(response.body);
+      return TripModel.fromJson(decode_option['data']);
     }
   } catch (err) {
     print(err);
@@ -2330,7 +2328,7 @@ Future addUser(List<String> selectedUser, String tripId) async {
 }
 
 Future meetingAddUser(List<String> selectedUser, String meetingId) async {
-    try {
+  try {
     var _user = await _prefs.readState("user");
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
@@ -2340,14 +2338,12 @@ Future meetingAddUser(List<String> selectedUser, String meetingId) async {
         'Content-Type': 'application/json; charset=UTF-8',
         'auth-token': _userData.token!,
       },
-      body: jsonEncode({
-        "user": selectedUser
-      }),
+      body: jsonEncode({"user": selectedUser}),
     );
     print(response.body);
     if (response.statusCode == 200) {
-    var decode_option = jsonDecode(response.body);
-    return TripModel.fromJson(decode_option['data']);
+      var decode_option = jsonDecode(response.body);
+      return TripModel.fromJson(decode_option['data']);
     }
   } catch (err) {
     print(err);
@@ -2356,23 +2352,22 @@ Future meetingAddUser(List<String> selectedUser, String meetingId) async {
 }
 
 Future planningAddUser(List<String> selectedUser, String planningId) async {
-    try {
+  try {
     var _user = await _prefs.readState("user");
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
     var response = await http.post(
-      Uri.parse('http://localhost:3000/api/user/planning/addUser/${planningId}'),
+      Uri.parse(
+          'http://localhost:3000/api/user/planning/addUser/${planningId}'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'auth-token': _userData.token!,
       },
-      body: jsonEncode({
-        "user": selectedUser
-      }),
+      body: jsonEncode({"user": selectedUser}),
     );
     if (response.statusCode == 200) {
-    var decode_option = jsonDecode(response.body);
-    return TripModel.fromJson(decode_option['data']);
+      var decode_option = jsonDecode(response.body);
+      return TripModel.fromJson(decode_option['data']);
     }
   } catch (err) {
     print(err);
@@ -2385,7 +2380,8 @@ Future getListTripUser(String tripId) async {
     var _user = await _prefs.readState("user");
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
-    var response = await http.get( Uri.parse('http://localhost:3000/api/user/trip/${tripId}'),
+    var response = await http.get(
+      Uri.parse('http://localhost:3000/api/user/trip/${tripId}'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'auth-token': _userData.token!,
@@ -2393,9 +2389,11 @@ Future getListTripUser(String tripId) async {
     );
     print(response.body);
     if (response.statusCode == 200) {
-    var decode_option = jsonDecode(response.body);
-    List<ContactModel> list = (decode_option['trip']['contact'] as List).map((e) => ContactModel.fromJson(e)).toList();
-    return list;
+      var decode_option = jsonDecode(response.body);
+      List<ContactModel> list = (decode_option['trip']['contact'] as List)
+          .map((e) => ContactModel.fromJson(e))
+          .toList();
+      return list;
     }
   } catch (err) {
     print(err);
@@ -2408,7 +2406,8 @@ Future getListMeetingUser(String meetingId) async {
     var _user = await _prefs.readState("user");
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
-    var response = await http.get( Uri.parse('http://localhost:3000/api/user/meeting/${meetingId}'),
+    var response = await http.get(
+      Uri.parse('http://localhost:3000/api/user/meeting/${meetingId}'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'auth-token': _userData.token!,
@@ -2416,9 +2415,11 @@ Future getListMeetingUser(String meetingId) async {
     );
     print(response.body);
     if (response.statusCode == 200) {
-    var decode_option = jsonDecode(response.body);
-    List<ContactModel> list = (decode_option['meeting']['contact'] as List).map((e) => ContactModel.fromJson(e)).toList();
-    return list;
+      var decode_option = jsonDecode(response.body);
+      List<ContactModel> list = (decode_option['meeting']['contact'] as List)
+          .map((e) => ContactModel.fromJson(e))
+          .toList();
+      return list;
     }
   } catch (err) {
     print(err);
@@ -2431,7 +2432,8 @@ Future getListPlanningUser(String planningId) async {
     var _user = await _prefs.readState("user");
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
-    var response = await http.get( Uri.parse('http://localhost:3000/api/user/planning/${planningId}'),
+    var response = await http.get(
+      Uri.parse('http://localhost:3000/api/user/planning/${planningId}'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'auth-token': _userData.token!,
@@ -2439,9 +2441,11 @@ Future getListPlanningUser(String planningId) async {
     );
     print(response.body);
     if (response.statusCode == 200) {
-    var decode_option = jsonDecode(response.body);
-    List<ContactModel> list = (decode_option['planning']['contact'] as List).map((e) => ContactModel.fromJson(e)).toList();
-    return list;
+      var decode_option = jsonDecode(response.body);
+      List<ContactModel> list = (decode_option['planning']['contact'] as List)
+          .map((e) => ContactModel.fromJson(e))
+          .toList();
+      return list;
     }
   } catch (err) {
     print(err);
@@ -2449,15 +2453,20 @@ Future getListPlanningUser(String planningId) async {
   }
 }
 
-Future uploadOrUpdateImage(PlatformFile file) async{
+Future uploadOrUpdateImage(PlatformFile file) async {
   var _user = await _prefs.readState("user");
   Map<String, dynamic> _data = jsonDecode(_user);
   UserModel _userData = UserModel.fromJson(_data);
-  var request = http.MultipartRequest("POST", Uri.parse("http://localhost:3000/api/user/uploadOrUpdate/${_userData.sId}"));
+  var request = http.MultipartRequest(
+      "POST",
+      Uri.parse(
+          "http://localhost:3000/api/user/uploadOrUpdate/${_userData.sId}"));
   request.headers['Content-Type'] = 'application/json; charset=UTF-8';
-  request.headers['auth-token'] = "${ _userData.token!}";
+  request.headers['auth-token'] = "${_userData.token!}";
 
-  request.files.add(new http.MultipartFile("newProfile", file.readStream!, file.size, filename: file.name));
+  request.files.add(new http.MultipartFile(
+      "newProfile", file.readStream!, file.size,
+      filename: file.name));
   var response = await request.send();
   if (response.statusCode == 200) {
     var result = await response.stream.bytesToString();
@@ -2468,13 +2477,13 @@ Future uploadOrUpdateImage(PlatformFile file) async{
     _prefs.createState("user", dataUpdate);
     return response.statusCode;
   } else {
-      Get.snackbar("Failed", "Please Try again",
-      colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
-      margin: EdgeInsets.only(left: 1230),
-      maxWidth: 300,
-      backgroundColor: Colors.red,
-      duration: Duration(seconds: 3),
-      overlayColor: kPrimaryColor);
+    Get.snackbar("Failed", "Please Try again",
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        margin: EdgeInsets.only(left: 1230),
+        maxWidth: 300,
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 3),
+        overlayColor: kPrimaryColor);
   }
 }

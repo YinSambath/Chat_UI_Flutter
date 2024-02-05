@@ -23,14 +23,20 @@ class FirebaseAuthentication {
       el.style.visibility = 'hidden';
       el.remove();
     }
-    print("OTP Sent to +855 $phone");
     return confirmationResult;
   }
 
   authenticateMe(ConfirmationResult confirmationResult, String otp) async {
     UserCredential userCredential = await confirmationResult.confirm(otp);
     if (userCredential != "" || userCredential != null) {
-      Get.snackbar("Success", "OTP comfirmed");
+      Get.snackbar("OTP comfirmed", "",
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
+          maxWidth: 300,
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+          overlayColor: kPrimaryColor);
       Get.to(ResetPassword());
     } else {
       Get.snackbar("Fail", "The SMS code has expired");

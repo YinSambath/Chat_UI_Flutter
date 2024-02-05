@@ -51,15 +51,20 @@ class Body extends StatelessWidget {
                   onPressed: () async {
                     String password = _password.text;
                     String comfirmedPassword = _comfirmedPassword.text;
-                    print("Hello");
                     if (password == comfirmedPassword) {
-                      print("Hello 1");
                       // final _resetLink = _prefs.readState("resetLink");
                       var response =
                           await resetPassword(password, comfirmedPassword);
                       if (response == 200) {
                         Get.snackbar(
-                            "Success", "Your password has been changed");
+                            "Password has been updated", "Please Login again",
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.TOP,
+                            margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
+                            maxWidth: 300,
+                            backgroundColor: Colors.green,
+                            duration: Duration(seconds: 3),
+                            overlayColor: kPrimaryColor);
                         Timer(
                           Duration(seconds: 2),
                           (() => Get.to(LoginScreen())),

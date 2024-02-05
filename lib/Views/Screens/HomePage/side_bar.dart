@@ -45,7 +45,7 @@ class _SideBarState extends State<SideBar> {
                         maxWidth: 200,
                       ),
                       child: Image.asset(
-                        "assets/images/logo makfood & mcircle.png",
+                        "assets/images/wuba-logo.png",
                       ),
                     ),
                     SizedBox(height: 150),

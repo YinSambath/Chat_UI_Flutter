@@ -48,7 +48,7 @@ class _BodyState extends State<Body> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    "MCIRCLE chat application",
+                    "Wuba chat application",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -56,7 +56,7 @@ class _BodyState extends State<Body> {
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Image.asset(
-                    "assets/images/mcircle Logo 512x512.png",
+                    "assets/images/wuba-logo.png",
                     height: 300,
                     width: 300,
                   ),
@@ -129,7 +129,7 @@ class _BodyState extends State<Body> {
                                 "Please enjoy your time.",
                                 colorText: Colors.white,
                                 snackPosition: SnackPosition.TOP,
-                                margin: EdgeInsets.only(left: 1230),
+                                margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
                                 maxWidth: 300,
                                 backgroundColor: Colors.green,
                                 duration: Duration(seconds: 3),
@@ -138,16 +138,6 @@ class _BodyState extends State<Body> {
                             Map<String, dynamic> _data = jsonDecode(_user);
                             UserModel _userData = UserModel.fromJson(_data);
                             Get.to(HomePage(userData: _userData));
-                          } else {
-                            Get.snackbar("Error",
-                                "Please Register a account before login!",
-                                colorText: Colors.white,
-                                snackPosition: SnackPosition.TOP,
-                                margin: EdgeInsets.only(left: 1230),
-                                maxWidth: 300,
-                                backgroundColor: Colors.red,
-                                duration: Duration(seconds: 3),
-                                overlayColor: kPrimaryColor);
                           }
                         }
                       },

@@ -40,7 +40,7 @@ class AboutUs extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(20),
               child: Text(
-                "MCircle was built on an aspiration to provide users a smart application to handle and process hiring in an organized and structured fashions that will save users a lot time and money. Now it’s a lot easier for users (recruiters)  to post job opportunities themselves, keep tracks of every   posting activities, manage their posting and engage with  applicants directly. Other users (job seekers) are able to use smart search tools to get to specific jobs they like to  get. Both recruiters and job seekers can engage directly on the platforms in a meaningful way.",
+                "We created this application in order to make people easy to communicate each other by using phone",
                 style: TextStyle(fontSize: 18),
               ),
             ),
@@ -96,12 +96,12 @@ class AboutUs extends StatelessWidget {
                         SizedBox(width: 148),
                         InkWell(
                           child: Text(
-                            "www.makcirle.com",
+                            "www.google.com",
                             style: TextStyle(
                               color: kPrimaryColor,
                             ),
                           ),
-                          onTap: () => launch("https://www.makcircle.com"),
+                          onTap: () => launch("https://www.google.com"),
                         ),
                       ],
                     ),
@@ -136,8 +136,7 @@ class AboutUs extends StatelessWidget {
                               color: kPrimaryColor,
                             ),
                           ),
-                          onTap: () =>
-                              launch("https://www.facebook.com/SxMBxTh/"),
+                          onTap: () => launch("https://www.facebook.com/"),
                         ),
                       ],
                     ),
@@ -165,12 +164,12 @@ class AboutUs extends StatelessWidget {
                       SizedBox(width: 165),
                       InkWell(
                         child: Text(
-                          "mcircle.developer@gmail.com",
+                          "wuba.developer@gmail.com",
                           style: TextStyle(
                             color: kPrimaryColor,
                           ),
                         ),
-                        onTap: () => launch("mcircle.developer@gmail.com"),
+                        onTap: () => launch("wuba.developer@gmail.com"),
                       ),
                     ],
                   )),

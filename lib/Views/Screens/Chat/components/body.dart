@@ -13,6 +13,7 @@ import 'package:mcircle_project_ui/chat_app.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:rflutter_alert/rflutter_alert.dart';
+
 class Body extends StatefulWidget {
   Body({Key? key, required this.userData}) : super(key: key);
   final UserModel userData;
@@ -48,7 +49,9 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   var targetId;
   @override
   void initState() {
-    targetId = (testController.text.isNotEmpty) ?  testController.text: "AB";
+    targetId = (testController.text.isNotEmpty)
+        ? testController.text
+        : "reciever_name";
 
     _info = false;
     super.initState();
@@ -56,7 +59,6 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ContactProvider>(context, listen: false).getContactData();
     });
-   
   }
 
   @override
@@ -69,9 +71,14 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     var _user = await _prefs.readState("user");
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
-    socket = IO.io("http://127.0.0.1:3000", IO.OptionBuilder().setTransports(['websocket']).setQuery({'username': "${_userData.firstname} ${_userData.lastname}", 'userId': _userData.sId}).build());
+    socket = IO.io(
+        "http://127.0.0.1:3000",
+        IO.OptionBuilder().setTransports(['websocket']).setQuery({
+          'username': "${_userData.firstname} ${_userData.lastname}",
+          'userId': _userData.sId
+        }).build());
     socket.connect(); //connect the Socket.IO Client to the Server
-  
+
     //SOCKET EVENTS
     // --> listening for connection
     socket.on('connect', (data) {
@@ -83,12 +90,18 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       // });
     });
 
-    socket.on(targetId, (data) => {
-      Provider. of<MessageProvider>(context, listen: false).addNewMessage(Message.fromJson(data))
-    });
+    socket.on(
+        targetId,
+        (data) => {
+              Provider.of<MessageProvider>(context, listen: false)
+                  .addNewMessage(Message.fromJson(data))
+            });
 
     //listen for incoming messages from the Server.
-    socket.on('message', (data) => Provider. of<MessageProvider>(context, listen: false).addNewMessage(Message.fromJson(data)));
+    socket.on(
+        'message',
+        (data) => Provider.of<MessageProvider>(context, listen: false)
+            .addNewMessage(Message.fromJson(data)));
 
     //listens when the client is disconnected from the Server
     socket.on('disconnect', (data) {
@@ -105,13 +118,13 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
     var message = {
-        "targetId": targetId,
-        "message": _msgController.text.trim(), //--> message to be sent
-        "username": "${_userData.firstname} ${_userData.lastname}",
-        "senderId": _userData.sId,
-        "sentAt": DateTime.now().toLocal().toString().substring(0,16),
-      };
-      print(message);
+      "targetId": targetId,
+      "message": _msgController.text.trim(), //--> message to be sent
+      "username": "${_userData.firstname} ${_userData.lastname}",
+      "senderId": _userData.sId,
+      "sentAt": DateTime.now().toLocal().toString().substring(0, 16),
+    };
+    print(message);
     socket.emit(
       "message",
       message,
@@ -214,7 +227,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                     child: InkWell(
                                       onTap: () {
                                         setStateIfMounted(() {
-                                          if (!mounted){
+                                          if (!mounted) {
                                             print("setter section");
                                             return;
                                           }
@@ -279,14 +292,14 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                               int index) {
                                             ContactModel _contact = notifier
                                                 .contactData!.data![index];
-                                           
+
                                             return InkWell(
                                               onHover: (value) {
                                                 if (value) {
                                                   _trailing = true;
                                                   _selected = index;
                                                   setStateIfMounted(() {
-                                                    if (!mounted){
+                                                    if (!mounted) {
                                                       print("setter section");
                                                       return;
                                                     }
@@ -297,7 +310,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                                       Duration(seconds: 60),
                                                       () {
                                                     setStateIfMounted(() {
-                                                      if (!mounted){
+                                                      if (!mounted) {
                                                         print("setter section");
                                                         return;
                                                       }
@@ -323,13 +336,22 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                                         child: ListTile(
                                                           leading: CircleAvatar(
                                                             child: Text(
-                                                              (_contact.firstname!.isNotEmpty && _contact.lastname!.isNotEmpty)
-                                                                ? ("${_contact.firstname![0].toUpperCase()}${_contact.lastname![0].toUpperCase()}")
-                                                                  :(_contact.firstname!.isNotEmpty && _contact.lastname!.isEmpty)
-                                                                  ?("${_contact.firstname![0].toUpperCase()}") 
-                                                                  :(_contact.firstname!.isEmpty && _contact.lastname!.isNotEmpty)
-                                                                  ?("${_contact.lastname![0].toUpperCase()}")
-                                                                : (""),
+                                                              (_contact.firstname!
+                                                                          .isNotEmpty &&
+                                                                      _contact
+                                                                          .lastname!
+                                                                          .isNotEmpty)
+                                                                  ? ("${_contact.firstname![0].toUpperCase()}${_contact.lastname![0].toUpperCase()}")
+                                                                  : (_contact.firstname!
+                                                                              .isNotEmpty &&
+                                                                          _contact
+                                                                              .lastname!
+                                                                              .isEmpty)
+                                                                      ? ("${_contact.firstname![0].toUpperCase()}")
+                                                                      : (_contact.firstname!.isEmpty &&
+                                                                              _contact.lastname!.isNotEmpty)
+                                                                          ? ("${_contact.lastname![0].toUpperCase()}")
+                                                                          : (""),
                                                               style: TextStyle(
                                                                 fontSize: 15,
                                                               ),
@@ -384,7 +406,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                                                               value) {
                                                                             case 0:
                                                                               setStateIfMounted(() {
-                                                                                if (!mounted){
+                                                                                if (!mounted) {
                                                                                   print("setter section");
                                                                                   return;
                                                                                 }
@@ -417,7 +439,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                                                                       String sId = _contact.sId!;
                                                                                       var response = await deleteContact(sId).whenComplete(() => {
                                                                                             setStateIfMounted(() {
-                                                                                              if (!mounted){
+                                                                                              if (!mounted) {
                                                                                                 print("setter section");
                                                                                                 return;
                                                                                               }
@@ -484,7 +506,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                           switch (int) {
                             case 0:
                               setStateIfMounted(() {
-                                if (!mounted){
+                                if (!mounted) {
                                   print("setter section");
                                   return;
                                 }
@@ -494,7 +516,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                             case 1:
                               listContact();
                               setStateIfMounted(() {
-                                if (!mounted){
+                                if (!mounted) {
                                   print("setter section");
                                   return;
                                 }
@@ -544,17 +566,11 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                 Icon(Icons.person),
                                 SizedBox(width: 10),
                                 Text("${targetId}"),
-                                RoundedInputField(hintText: "input your name", width: 80, height: 50, controller: testController, onChanged: (value) {
-                                 setState(() {
-                                   targetId = ( value.isNotEmpty)? value : "AB";
-                                   
-                                 });
-                                },),
                               ],
                             ),
                             onTap: () {
                               setStateIfMounted(() {
-                                if (!mounted){
+                                if (!mounted) {
                                   print("setter section");
                                   return;
                                 }
@@ -574,62 +590,64 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                   ),
                   SizedBox(width: 45, height: 10),
                   Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(11),
-              ),
-              child: Consumer<MessageProvider>(
-                builder: (_, provider, __) => ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemBuilder: (context, index) {
-                    final message = provider.messages[index];
-                    
-                    return Wrap(
-                      alignment: message.senderId == widget.userData.sId
-                          ? WrapAlignment.end
-                          : WrapAlignment.start,
-                      children: [
-                        
-                        Card(
-                          color: message.senderId == widget.userData.sId
-                              ? kPrimaryColor
-                              : Colors.white,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment:
-                                  message.senderId == widget.userData.sId
-                                      ? CrossAxisAlignment.end
-                                      : CrossAxisAlignment.start,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(11),
+                      ),
+                      child: Consumer<MessageProvider>(
+                        builder: (_, provider, __) => ListView.separated(
+                          padding: const EdgeInsets.all(16),
+                          itemBuilder: (context, index) {
+                            final message = provider.messages[index];
+
+                            return Wrap(
+                              alignment: message.senderId == widget.userData.sId
+                                  ? WrapAlignment.end
+                                  : WrapAlignment.start,
                               children: [
-                                Text(message.message, style: TextStyle(
-                                  color: 
-                                    message.senderUsername == "${widget.userData.firstname} ${widget.userData.lastname}"
-                                      ?Colors.white
-                                      :Colors.black
+                                Card(
+                                  color: message.senderId == widget.userData.sId
+                                      ? kPrimaryColor
+                                      : Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: message.senderId ==
+                                              widget.userData.sId
+                                          ? CrossAxisAlignment.end
+                                          : CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          message.message,
+                                          style: TextStyle(
+                                              color: message.senderUsername ==
+                                                      "${widget.userData.firstname} ${widget.userData.lastname}"
+                                                  ? Colors.white
+                                                  : Colors.black),
+                                        ),
+                                        Text(
+                                          (message.sentAt.toString()),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .caption,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                Text(
-                                  (message.sentAt.toString()),
-                                  style: Theme.of(context).textTheme.caption,
-                                ),
                               ],
-                            ),
+                            );
+                          },
+                          separatorBuilder: (_, index) => const SizedBox(
+                            height: 5,
                           ),
+                          itemCount: provider.messages.length,
                         ),
-                      ],
-                    );
-                  },
-                  separatorBuilder: (_, index) => const SizedBox(
-                    height: 5,
+                      ),
+                    ),
                   ),
-                  itemCount: provider.messages.length,
-                ),
-              ),
-            ),
-          ),
                   SizedBox(width: 45, height: 10),
                   Container(
                     height: 40,
@@ -654,7 +672,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                             controller: _msgController,
                             onChanged: (value) {
                               setStateIfMounted(() {
-                                if (!mounted){
+                                if (!mounted) {
                                   print("setter section");
                                   return;
                                 }
@@ -725,12 +743,12 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(4.0),
-                            child: Image.asset("images/person.png"),
+                            child: Icon(Icons.person),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(4.0),
                             child: Text(
-                              "ChatName",
+                              "${targetId}",
                               style: TextStyle(
                                 fontSize: 24.0,
                               ),
@@ -750,6 +768,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
       ),
     );
   }
+
   void setStateIfMounted(f) {
     if (mounted) setState(f);
   }

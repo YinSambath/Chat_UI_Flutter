@@ -157,15 +157,20 @@ class _BodyState extends State<Body> {
                             email,
                             password,
                             comfirmedPassword);
-                        print(response);
                         if (response == 200) {
-                          Get.snackbar("Register", "successful");
+                          Get.snackbar("Register successfully",
+                              "Please enjoy your time.",
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.TOP,
+                              margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
+                              maxWidth: 300,
+                              backgroundColor: Colors.green,
+                              duration: Duration(seconds: 3),
+                              overlayColor: kPrimaryColor);
                           var _user = await _prefs.readState("user");
                           Map<String, dynamic> _data = jsonDecode(_user);
                           UserModel _userData = UserModel.fromJson(_data);
                           Get.to(HomePage(userData: _userData));
-                        } else {
-                          Get.snackbar("Error", "Please try again!");
                         }
                       }
                     },

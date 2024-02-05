@@ -71,11 +71,21 @@ class Body extends StatelessWidget {
 
                         var response = await signin(phone, password);
                         if (response == 200) {
-                          Get.snackbar("Success", "Login success");
+                          Get.snackbar(
+                              "Login success", "Please enjoy your time.",
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.TOP,
+                              margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
+                              maxWidth: 300,
+                              backgroundColor: Colors.green,
+                              duration: Duration(seconds: 3),
+                              overlayColor: kPrimaryColor);
                           var _user = await _prefs.readState("user");
                           Map<String, dynamic> _data = jsonDecode(_user);
                           UserModel _userData = UserModel.fromJson(_data);
-                          Get.to(HomePage(userData: _userData,));
+                          Get.to(HomePage(
+                            userData: _userData,
+                          ));
                         }
                       }
                     },
@@ -99,5 +109,4 @@ class Body extends StatelessWidget {
       ),
     );
   }
-
 }

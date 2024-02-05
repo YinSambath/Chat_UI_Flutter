@@ -49,7 +49,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
     return genList
         .map<DropdownMenuItem<String>>(
           (value) => DropdownMenuItem(
-            value: value,
+            value: value == null ? "male" : value,
             child: Text(value),
           ),
         )
@@ -60,7 +60,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
     return statusList
         .map<DropdownMenuItem<String>>(
           (value) => DropdownMenuItem(
-            value: value,
+            value: value == null ? "single" : null,
             child: Text(value),
           ),
         )
@@ -196,8 +196,21 @@ class _UpdateProfileState extends State<UpdateProfile> {
                                               );
                                               if (response == 200) {
                                                 setState(() {
-                                                  Get.snackbar("Updated!",
-                                                      "You have updated your information.");
+                                                  Get.snackbar("Successfully",
+                                                      "Your infomation has been updated",
+                                                      colorText: Colors.white,
+                                                      snackPosition:
+                                                          SnackPosition.TOP,
+                                                      margin:
+                                                          EdgeInsets.fromLTRB(
+                                                              0, 10, 10, 0),
+                                                      maxWidth: 300,
+                                                      backgroundColor:
+                                                          Colors.green,
+                                                      duration:
+                                                          Duration(seconds: 3),
+                                                      overlayColor:
+                                                          kPrimaryColor);
                                                   Navigator.of(context).pop();
                                                   Provider.of<UserProvider>(
                                                           context,
@@ -302,92 +315,93 @@ class _UpdateProfileState extends State<UpdateProfile> {
                             ],
                           ),
                           SizedBox(height: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Sex: "),
-                              SizedBox(height: 8),
-                              Container(
-                                width: 400,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: Color.fromRGBO(248, 248, 248, 1),
-                                ),
-                                child: SizedBox(
-                                  width: 400,
-                                  height: 55,
-                                  child: DropdownButtonFormField2<String>(
-                                    items: _createGen(),
-                                    value: _valueGen!=null ? _valueGen :null,
-                                    onChanged: (String? newValue) {
-                                      _valueGen = newValue!;
-                                      _resultGen = _valueGen!;
-                                    },
-                                    onSaved: (String? newValue) {
-                                      newValue = _valueGen;
-                                      _resultGen = newValue!;
-                                    },
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Gender field requires';
-                                      }
-                                      return null;
-                                    },
-                                    // style
-                                    selectedItemBuilder:
-                                        (BuildContext context) {
-                                      return genList.map((String value) {
-                                        return Text(
-                                          value,
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            decorationColor: Colors.transparent,
-                                          ),
-                                        );
-                                      }).toList();
-                                    },
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(11),
-                                          borderSide: BorderSide(
-                                              color: Colors.transparent,
-                                              style: BorderStyle.solid,
-                                              width: 0.80)),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            width: 0,
-                                            color: Colors.transparent),
-                                        borderRadius: BorderRadius.circular(11),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            width: 0,
-                                            color: Colors.transparent),
-                                        borderRadius: BorderRadius.circular(11),
-                                      ),
-                                      errorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            width: 0, color: Colors.red),
-                                        borderRadius: BorderRadius.circular(11),
-                                      ),
-                                    ),
-                                    alignment: Alignment.centerLeft,
-                                    focusColor: Colors.transparent,
-                                    hint: Text("Select item"),
-                                    icon: Icon(
-                                      Icons.arrow_drop_down_outlined,
-                                      color: kPrimaryColor,
-                                    ),
-                                    isExpanded: true,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
+                          // Column(
+                          //   crossAxisAlignment: CrossAxisAlignment.start,
+                          //   children: [
+                          //     Text("Sex: "),
+                          //     SizedBox(height: 8),
+                          //     Container(
+                          //       width: 400,
+                          //       height: 60,
+                          //       decoration: BoxDecoration(
+                          //         color: Color.fromRGBO(248, 248, 248, 1),
+                          //       ),
+                          //       child: SizedBox(
+                          //         width: 400,
+                          //         height: 55,
+                          //         child: DropdownButtonFormField2<String>(
+                          //           items: _createGen(),
+                          //           value:
+                          //               _valueGen != null ? _valueGen : "male",
+                          //           onChanged: (String? newValue) {
+                          //             _valueGen = newValue!;
+                          //             _resultGen = _valueGen!;
+                          //           },
+                          //           onSaved: (String? newValue) {
+                          //             newValue = _valueGen;
+                          //             _resultGen = newValue!;
+                          //           },
+                          //           validator: (value) {
+                          //             if (value == null || value.isEmpty) {
+                          //               return 'Gender field requires';
+                          //             }
+                          //             return null;
+                          //           },
+                          //           // style
+                          //           selectedItemBuilder:
+                          //               (BuildContext context) {
+                          //             return genList.map((String value) {
+                          //               return Text(
+                          //                 value,
+                          //                 style: TextStyle(
+                          //                   color: Colors.black,
+                          //                   decorationColor: Colors.transparent,
+                          //                 ),
+                          //               );
+                          //             }).toList();
+                          //           },
+                          //           decoration: InputDecoration(
+                          //             filled: true,
+                          //             fillColor: Colors.white,
+                          //             border: OutlineInputBorder(
+                          //                 borderRadius:
+                          //                     BorderRadius.circular(11),
+                          //                 borderSide: BorderSide(
+                          //                     color: Colors.transparent,
+                          //                     style: BorderStyle.solid,
+                          //                     width: 0.80)),
+                          //             focusedBorder: OutlineInputBorder(
+                          //               borderSide: BorderSide(
+                          //                   width: 0,
+                          //                   color: Colors.transparent),
+                          //               borderRadius: BorderRadius.circular(11),
+                          //             ),
+                          //             enabledBorder: OutlineInputBorder(
+                          //               borderSide: BorderSide(
+                          //                   width: 0,
+                          //                   color: Colors.transparent),
+                          //               borderRadius: BorderRadius.circular(11),
+                          //             ),
+                          //             errorBorder: OutlineInputBorder(
+                          //               borderSide: BorderSide(
+                          //                   width: 0, color: Colors.red),
+                          //               borderRadius: BorderRadius.circular(11),
+                          //             ),
+                          //           ),
+                          //           alignment: Alignment.centerLeft,
+                          //           focusColor: Colors.transparent,
+                          //           hint: Text("Select item"),
+                          //           icon: Icon(
+                          //             Icons.arrow_drop_down_outlined,
+                          //             color: kPrimaryColor,
+                          //           ),
+                          //           isExpanded: true,
+                          //         ),
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
+                          // SizedBox(height: 8),
                           Container(
                             width: 400,
                             height: 45,
@@ -480,89 +494,91 @@ class _UpdateProfileState extends State<UpdateProfile> {
                             ],
                           ),
                           SizedBox(height: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Material Status: "),
-                              SizedBox(height: 8),
-                              Container(
-                                width: 400,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: Color.fromRGBO(248, 248, 248, 1),
-                                ),
-                                child: SizedBox(
-                                  width: 400,
-                                  height: 50,
-                                  child: DropdownButtonFormField2<String>(
-                                    items: _createStatus(),
-                                    value: _valueStatus!=null?_valueStatus:null,
-                                    onChanged: (String? newStatus) {
-                                      _valueStatus = newStatus!;
-                                      _resultStatus = _valueStatus!;
-                                    },
-                                    onSaved: (String? newStatus) {
-                                      newStatus = _valueStatus;
-                                      _resultStatus = newStatus!;
-                                    },
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Status field requires';
-                                      }
-                                      return null;
-                                    },
-                                    selectedItemBuilder:
-                                        (BuildContext context) {
-                                      return statusList.map((String value) {
-                                        return Text(
-                                          value,
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            decorationColor: Colors.transparent,
-                                          ),
-                                        );
-                                      }).toList();
-                                    },
-                                    // Style
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(11.0),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            width: 0,
-                                            color: Colors.transparent),
-                                        borderRadius: BorderRadius.circular(11),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            width: 0,
-                                            color: Colors.transparent),
-                                        borderRadius: BorderRadius.circular(11),
-                                      ),
-                                      errorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            width: 0, color: Colors.red),
-                                        borderRadius: BorderRadius.circular(11),
-                                      ),
-                                    ),
-                                    hint: Text("Select item"),
-                                    alignment: Alignment.centerLeft,
-                                    focusColor: Colors.transparent,
-                                    icon: Icon(
-                                      Icons.arrow_drop_down_outlined,
-                                      color: kPrimaryColor,
-                                    ),
-                                    isExpanded: true,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
+                          // Column(
+                          //   crossAxisAlignment: CrossAxisAlignment.start,
+                          //   children: [
+                          //     Text("Material Status: "),
+                          //     SizedBox(height: 8),
+                          //     Container(
+                          //       width: 400,
+                          //       height: 60,
+                          //       decoration: BoxDecoration(
+                          //         color: Color.fromRGBO(248, 248, 248, 1),
+                          //       ),
+                          //       child: SizedBox(
+                          //         width: 400,
+                          //         height: 50,
+                          //         child: DropdownButtonFormField2<String>(
+                          //           items: _createStatus(),
+                          //           value: _valueStatus != null
+                          //               ? _valueStatus
+                          //               : "single",
+                          //           onChanged: (String? newStatus) {
+                          //             _valueStatus = newStatus!;
+                          //             _resultStatus = _valueStatus!;
+                          //           },
+                          //           onSaved: (String? newStatus) {
+                          //             newStatus = _valueStatus;
+                          //             _resultStatus = newStatus!;
+                          //           },
+                          //           validator: (value) {
+                          //             if (value == null || value.isEmpty) {
+                          //               return 'Status field requires';
+                          //             }
+                          //             return null;
+                          //           },
+                          //           selectedItemBuilder:
+                          //               (BuildContext context) {
+                          //             return statusList.map((String value) {
+                          //               return Text(
+                          //                 value,
+                          //                 style: TextStyle(
+                          //                   color: Colors.black,
+                          //                   decorationColor: Colors.transparent,
+                          //                 ),
+                          //               );
+                          //             }).toList();
+                          //           },
+                          //           // Style
+                          //           decoration: InputDecoration(
+                          //             filled: true,
+                          //             fillColor: Colors.white,
+                          //             border: OutlineInputBorder(
+                          //               borderRadius:
+                          //                   BorderRadius.circular(11.0),
+                          //             ),
+                          //             focusedBorder: OutlineInputBorder(
+                          //               borderSide: BorderSide(
+                          //                   width: 0,
+                          //                   color: Colors.transparent),
+                          //               borderRadius: BorderRadius.circular(11),
+                          //             ),
+                          //             enabledBorder: OutlineInputBorder(
+                          //               borderSide: BorderSide(
+                          //                   width: 0,
+                          //                   color: Colors.transparent),
+                          //               borderRadius: BorderRadius.circular(11),
+                          //             ),
+                          //             errorBorder: OutlineInputBorder(
+                          //               borderSide: BorderSide(
+                          //                   width: 0, color: Colors.red),
+                          //               borderRadius: BorderRadius.circular(11),
+                          //             ),
+                          //           ),
+                          //           hint: Text("Select item"),
+                          //           alignment: Alignment.centerLeft,
+                          //           focusColor: Colors.transparent,
+                          //           icon: Icon(
+                          //             Icons.arrow_drop_down_outlined,
+                          //             color: kPrimaryColor,
+                          //           ),
+                          //           isExpanded: true,
+                          //         ),
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
+                          // SizedBox(height: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

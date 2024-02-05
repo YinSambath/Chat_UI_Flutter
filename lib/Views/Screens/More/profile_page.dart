@@ -396,7 +396,15 @@ class _MoreScreenState extends State<MoreScreen> {
                   onPressed: () async {
                     var response = await signout();
                     if (response == 200) {
-                      Get.snackbar("Logout", "Success");
+                      Get.snackbar("Logout successfully",
+                          "Please log in to make a contact with your people",
+                          colorText: Colors.white,
+                          snackPosition: SnackPosition.TOP,
+                          margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
+                          maxWidth: 300,
+                          backgroundColor: Colors.grey,
+                          duration: Duration(seconds: 3),
+                          overlayColor: kPrimaryColor);
                       await _prefs.removeState("user");
                       Get.to(LoginScreen());
                     }

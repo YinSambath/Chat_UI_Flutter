@@ -15,9 +15,11 @@ class SplashViewState extends State<SplashView> {
       if (_user != null) {
         Map<String, dynamic> _data = jsonDecode(_user);
         UserModel _userData = UserModel.fromJson(_data);
-        Get.to(HomePage(userData: _userData,));
+        Get.to(HomePage(
+          userData: _userData,
+        ));
       } else {
-              Get.to(WelcomeScreen());
+        Get.to(WelcomeScreen());
       }
     });
     super.initState();
@@ -35,17 +37,17 @@ class SplashViewState extends State<SplashView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/images/logo makfood & mcircle.png',
+                    'assets/images/wuba-logo.png',
                   ),
-                  const SizedBox(width: 20),
-                  Text("Welcome MCIRCLE chat application"),
+                  const SizedBox(width: 10),
+                  Text("Welcome to chat application"),
                 ],
               ),
             ),
             Container(
               margin: const EdgeInsets.only(bottom: 10),
               child: const Text(
-                '© 2022 All Right reserved to Mak Circle Col., Ltd',
+                '© 2022 All Right reserved to creator',
               ),
             ),
           ],

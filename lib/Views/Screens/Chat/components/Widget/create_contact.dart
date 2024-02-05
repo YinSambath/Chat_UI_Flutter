@@ -76,7 +76,15 @@ class _CreateContactState extends State<CreateContact> {
                                         firstname, lastname, phone);
                                     if (response != null) {
                                       Get.snackbar(
-                                          "Done", "Contact has been created.");
+                                          "Successfully", "Contact Created",
+                                          colorText: Colors.white,
+                                          snackPosition: SnackPosition.TOP,
+                                          margin:
+                                              EdgeInsets.fromLTRB(0, 10, 10, 0),
+                                          maxWidth: 300,
+                                          backgroundColor: Colors.green,
+                                          duration: Duration(seconds: 3),
+                                          overlayColor: kPrimaryColor);
                                       Provider.of<ContactProvider>(context,
                                               listen: false)
                                           .createUpdate(response);
@@ -115,7 +123,8 @@ class _CreateContactState extends State<CreateContact> {
                         height: 80,
                         child: CircleAvatar(
                           child: Text(
-                            firstLetter.toUpperCase() + lastLetter.toUpperCase(),
+                            firstLetter.toUpperCase() +
+                                lastLetter.toUpperCase(),
                             style: TextStyle(
                               fontSize: 40,
                             ),
