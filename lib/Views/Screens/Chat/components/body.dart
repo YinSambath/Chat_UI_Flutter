@@ -743,7 +743,7 @@ class _BodyState extends State<Body> with AutomaticKeepAliveClientMixin {
                                                                     ),
                                                                   ),
                                                                 )
-                                                              : Container(),
+                                                              : SizedBox(),
                                                           (_chat.message![index]
                                                                           .message !=
                                                                       null ||
@@ -768,7 +768,7 @@ class _BodyState extends State<Body> with AutomaticKeepAliveClientMixin {
                                                                     ),
                                                                   ),
                                                                 )
-                                                              : Container(),
+                                                              : SizedBox(),
                                                           Padding(
                                                             padding:
                                                                 const EdgeInsets
