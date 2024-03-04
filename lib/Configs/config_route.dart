@@ -10,6 +10,7 @@ import 'package:mcircle_project_ui/Models/action_planning_model.dart';
 import 'package:mcircle_project_ui/Models/contact_model.dart';
 import 'package:mcircle_project_ui/Models/folder_model.dart';
 import 'package:mcircle_project_ui/Models/meeting_model.dart';
+import 'package:mcircle_project_ui/Models/message.dart';
 import 'package:mcircle_project_ui/Models/planning_model.dart';
 import 'package:mcircle_project_ui/Models/todo_model.dart';
 import 'package:mcircle_project_ui/Models/trip_model.dart';
@@ -2485,5 +2486,116 @@ Future uploadOrUpdateImage(PlatformFile file) async {
         backgroundColor: Colors.red,
         duration: Duration(seconds: 3),
         overlayColor: kPrimaryColor);
+  }
+}
+
+Future listChat() async {
+  try {
+    var _user = await _prefs.readState("user");
+    Map<String, dynamic> _data = jsonDecode(_user);
+    UserModel _userData = UserModel.fromJson(_data);
+    var response = await http.get(
+      Uri.parse('http://localhost:3000/api/user/chat/list-chat'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'auth-token': _userData.token!,
+      },
+    );
+    var decode_option = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return ChatDataModel.fromJson(decode_option);
+    } else {
+      return response.statusCode;
+    }
+  } catch (err) {
+    print("There is an err ${err}");
+    return null;
+  }
+}
+
+Future privateChat(String person2Id) async {
+  try {
+    var _user = await _prefs.readState("user");
+    Map<String, dynamic> _data = jsonDecode(_user);
+    UserModel _userData = UserModel.fromJson(_data);
+    var response = await http.get(
+      Uri.parse(
+          'http://localhost:3000/api/user/chat/private-chat/${person2Id}'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'auth-token': _userData.token!,
+      },
+    );
+    var decode_option = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return ChatModel.fromJson(decode_option);
+    } else {
+      return response.statusCode;
+    }
+  } catch (err) {
+    print("There is an err ${err}");
+    return null;
+  }
+}
+
+Future sendImage(PlatformFile file) async {
+  var _user = await _prefs.readState("user");
+  Map<String, dynamic> _data = jsonDecode(_user);
+  UserModel _userData = UserModel.fromJson(_data);
+  var request = http.MultipartRequest(
+      "POST", Uri.parse("http://localhost:3000/api/user/chat/sendimage"));
+  request.headers['Content-Type'] = 'application/json; charset=UTF-8';
+  request.headers['auth-token'] = "${_userData.token!}";
+
+  request.files.add(new http.MultipartFile("image", file.readStream!, file.size,
+      filename: file.name));
+  var response = await request.send();
+  if (response.statusCode == 200) {
+    var result = await response.stream.bytesToString();
+    return result;
+  } else {
+    Get.snackbar("Failed", "Please Try again",
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        margin: EdgeInsets.only(left: 1230),
+        maxWidth: 300,
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 3),
+        overlayColor: kPrimaryColor);
+  }
+}
+
+Future createPrivateChat(String phone) async {
+  try {
+    var _user = await _prefs.readState("user");
+    Map<String, dynamic> _data = jsonDecode(_user);
+    UserModel _userData = UserModel.fromJson(_data);
+    var response = await http.post(
+      Uri.parse('http://localhost:3000/api/user/chat/create-chat/'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'auth-token': _userData.token!,
+      },
+      body: jsonEncode(<String, String?>{
+        'person1Id': _userData.sId,
+        'person1Name': _userData.firstname! + '' + _userData.lastname!,
+        'person2Phone': phone,
+      }),
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response;
+    } else {
+      Get.snackbar("Failed", "Please Try again",
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          margin: EdgeInsets.only(left: 1230),
+          maxWidth: 300,
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+          overlayColor: kPrimaryColor);
+    }
+  } catch (err) {
+    print("There is an err ${err}");
+    return null;
   }
 }

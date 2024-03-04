@@ -2,6 +2,7 @@
 import 'package:mcircle_project_ui/Providers/action_meeting_provider.dart';
 import 'package:mcircle_project_ui/Providers/action_planning_provider.dart';
 import 'package:mcircle_project_ui/Providers/action_provider.dart';
+import 'package:mcircle_project_ui/Providers/chat_member_provider.dart';
 import 'package:mcircle_project_ui/Providers/contact_provider.dart';
 import 'package:mcircle_project_ui/Providers/folder_provider.dart';
 import 'package:mcircle_project_ui/Providers/meeting_provider.dart';
@@ -58,6 +59,8 @@ class MyApp extends StatelessWidget {
             create: (_) => ActionPlanningProvider()),
         ChangeNotifierProvider<MessageProvider>(
             create: (_) => MessageProvider()),
+        ChangeNotifierProvider<ChatMemberProvider>(
+            create: (_) => ChatMemberProvider()),
       ],
       child: GetMaterialApp(
         initialRoute: "/SplashRoute",

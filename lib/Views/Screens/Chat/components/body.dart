@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mcircle_project_ui/Configs/enum.dart';
@@ -13,6 +15,8 @@ import 'package:mcircle_project_ui/chat_app.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 
 class Body extends StatefulWidget {
   Body({Key? key, required this.userData}) : super(key: key);
@@ -32,7 +36,8 @@ List<Tab> chatOrContact = <Tab>[
   ),
 ];
 
-class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
+class _BodyState extends State<Body> with AutomaticKeepAliveClientMixin {
+  final GlobalKey<State> _key = GlobalKey<State>();
   late ContactProvider userId;
   late bool _info;
   int _index = 0;
@@ -46,25 +51,25 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
   ContactModel? seletedContext;
   late IO.Socket socket;
   TextEditingController testController = TextEditingController();
-  var targetId;
+  String person2Id = '';
+  String person2Name = '';
+  late bool isMounted;
+  var isConnected = false;
+  PlatformFile? file;
+  String imageName = '';
+
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
-    targetId = (testController.text.isNotEmpty)
-        ? testController.text
-        : "reciever_name";
-
+    isMounted = true;
     _info = false;
     super.initState();
     initializeSocket();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ContactProvider>(context, listen: false).getContactData();
     });
-  }
-
-  @override
-  void dispose() {
-    socket.disconnect();
-    super.dispose();
   }
 
   void initializeSocket() async {
@@ -81,27 +86,13 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
 
     //SOCKET EVENTS
     // --> listening for connection
-    socket.on('connect', (data) {
-      print(socket.connected);
-      // print(data);
-      // socket.on(targetId, (message)=>{r
-      //   // _msgController
-      //   print(targetId+'-'+message)
-      // });
-    });
-
-    socket.on(
-        targetId,
-        (data) => {
-              Provider.of<MessageProvider>(context, listen: false)
-                  .addNewMessage(Message.fromJson(data))
-            });
+    socket.on('connect', (data) => {print(socket.connected)});
 
     //listen for incoming messages from the Server.
-    socket.on(
-        'message',
-        (data) => Provider.of<MessageProvider>(context, listen: false)
-            .addNewMessage(Message.fromJson(data)));
+    socket.on("message", (data) {
+      Provider.of<MessageProvider>(context, listen: false)
+          .addNewMessage(ChatModel.fromJson(data));
+    });
 
     //listens when the client is disconnected from the Server
     socket.on('disconnect', (data) {
@@ -109,27 +100,56 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     });
   }
 
-  sendMessage(String message) async {
-    if (!mounted) {
-      print("setter section");
-      return;
-    }
+  sendMessage(String textmessage, String imagename) async {
+    print('start send message');
     var _user = await _prefs.readState("user");
     Map<String, dynamic> _data = jsonDecode(_user);
     UserModel _userData = UserModel.fromJson(_data);
     var message = {
-      "targetId": targetId,
-      "message": _msgController.text.trim(), //--> message to be sent
+      "targetId": person2Id,
+      "message": textmessage.trim(), //--> message to be sent
+      "image": imagename.trim(), //--> image to be sent
       "username": "${_userData.firstname} ${_userData.lastname}",
       "senderId": _userData.sId,
       "sentAt": DateTime.now().toLocal().toString().substring(0, 16),
     };
-    print(message);
     socket.emit(
       "message",
       message,
     );
     _msgController.clear();
+  }
+
+  handleFilePick() async {
+    try {
+      FilePickerResult? result =
+          await FilePicker.platform.pickFiles(withReadStream: true);
+
+      if (result != null && result.files.isNotEmpty) {
+      } else {
+        print('No file selected.');
+      }
+    } catch (e) {
+      // Handle file picking error
+      print('Error picking file: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    socket.disconnect();
+    super.dispose();
+  }
+
+  void setStateIfMounted(f) {
+    if (mounted) setState(f);
+  }
+
+  callbackId(String id, String name) {
+    setState(() {
+      person2Id = id;
+      person2Name = name;
+    });
   }
 
   @override
@@ -158,6 +178,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                     height: 40,
                     width: 250,
                     // constraints: BoxConstraints(maxWidth: 250),
+                    // checking serch for index chat or contact
                     child: TextFormField(
                       onChanged: (value) async {
                         String search = value;
@@ -211,7 +232,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                       child: TabBarView(
                         children: [
                           SingleChildScrollView(
-                            child: ChatMember(),
+                            child: ChatMember(callbackId: callbackId),
                           ),
                           SingleChildScrollView(
                             child: Container(
@@ -380,13 +401,26 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                                                             child:
                                                                                 Row(
                                                                               children: [
+                                                                                Icon(Icons.chat, color: kPrimaryColor),
+                                                                                SizedBox(width: 8),
+                                                                                Text("Create Chat")
+                                                                              ],
+                                                                            ),
+                                                                            value:
+                                                                                0,
+                                                                          ),
+                                                                          PopupMenuItem<
+                                                                              int>(
+                                                                            child:
+                                                                                Row(
+                                                                              children: [
                                                                                 Icon(Icons.edit, color: kPrimaryColor),
                                                                                 SizedBox(width: 8),
                                                                                 Text("Update")
                                                                               ],
                                                                             ),
                                                                             value:
-                                                                                0,
+                                                                                1,
                                                                           ),
                                                                           PopupMenuItem<
                                                                               int>(
@@ -397,14 +431,36 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                                                               Text("Delete")
                                                                             ]),
                                                                             value:
-                                                                                1,
+                                                                                2,
                                                                           ),
                                                                         ],
                                                                         onSelected:
-                                                                            (value) {
+                                                                            (value) async {
+                                                                          print(
+                                                                              value);
                                                                           switch (
                                                                               value) {
                                                                             case 0:
+                                                                              final response = await createPrivateChat(_contact.phone!);
+                                                                              print('abc ${response.body}');
+                                                                              if (response.statusCode == 200) {
+                                                                                setState(() {
+                                                                                  person2Id = _contact.sId!;
+                                                                                  DefaultTabController.of(context)?.animateTo(0);
+                                                                                  Provider.of<MessageProvider>(context, listen: false).getPrivateChatData(person2Id);
+                                                                                });
+                                                                              } else {
+                                                                                setState(() {
+                                                                                  var decode_json = jsonDecode(response.body);
+                                                                                  person2Id = decode_json['data'];
+                                                                                  print(person2Id);
+                                                                                  DefaultTabController.of(context)?.animateTo(0);
+                                                                                  Provider.of<MessageProvider>(context, listen: false).getPrivateChatData(person2Id);
+                                                                                });
+                                                                              }
+                                                                              break;
+                                                                            case 1:
+                                                                              print('2');
                                                                               setStateIfMounted(() {
                                                                                 if (!mounted) {
                                                                                   print("setter section");
@@ -415,7 +471,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                                                                                 _scaffoldKey.currentState?.openEndDrawer();
                                                                               });
                                                                               break;
-                                                                            case 1:
+                                                                            case 2:
+                                                                              print('3');
                                                                               Alert(
                                                                                 context: context,
                                                                                 type: AlertType.warning,
@@ -502,7 +559,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                       ),
                       child: TabBar(
                         tabs: chatOrContact,
-                        onTap: (int) {
+                        onTap: (int) async {
                           switch (int) {
                             case 0:
                               setStateIfMounted(() {
@@ -550,183 +607,300 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
           Expanded(
             child: Container(
               width: 1300,
-              child: Column(
-                children: [
-                  SizedBox(width: 45),
-                  // container for Put chat name or group name
-                  Container(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: (person2Id != '')
+                  ? Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(3, 8, 8, 8),
-                          child: InkWell(
-                            child: Row(
-                              children: [
-                                Icon(Icons.person),
-                                SizedBox(width: 10),
-                                Text("${targetId}"),
-                              ],
-                            ),
-                            onTap: () {
-                              setStateIfMounted(() {
-                                if (!mounted) {
-                                  print("setter section");
-                                  return;
-                                }
-                                _info = !_info;
-                              });
-                            },
+                        SizedBox(width: 45),
+                        // container for Put chat name or group name
+                        Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(3, 8, 8, 8),
+                                child: InkWell(
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.person),
+                                      SizedBox(width: 10),
+                                      Text("${person2Name}"),
+                                    ],
+                                  ),
+                                  onTap: () {
+                                    setStateIfMounted(() {
+                                      if (!mounted) {
+                                        print("setter section");
+                                        return;
+                                      }
+                                      _info = !_info;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SvgPicture.asset("icons/mute.svg"),
+                              ),
+                            ],
                           ),
+                          height: 40,
+                          width: MediaQuery.of(context).size.width,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SvgPicture.asset("icons/mute.svg"),
-                        ),
-                      ],
-                    ),
-                    height: 40,
-                    width: MediaQuery.of(context).size.width,
-                  ),
-                  SizedBox(width: 45, height: 10),
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      child: Consumer<MessageProvider>(
-                        builder: (_, provider, __) => ListView.separated(
-                          padding: const EdgeInsets.all(16),
-                          itemBuilder: (context, index) {
-                            final message = provider.messages[index];
-
-                            return Wrap(
-                              alignment: message.senderId == widget.userData.sId
-                                  ? WrapAlignment.end
-                                  : WrapAlignment.start,
-                              children: [
-                                Card(
-                                  color: message.senderId == widget.userData.sId
-                                      ? kPrimaryColor
-                                      : Colors.white,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: message.senderId ==
-                                              widget.userData.sId
-                                          ? CrossAxisAlignment.end
-                                          : CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          message.message,
-                                          style: TextStyle(
-                                              color: message.senderUsername ==
-                                                      "${widget.userData.firstname} ${widget.userData.lastname}"
-                                                  ? Colors.white
-                                                  : Colors.black),
-                                        ),
-                                        Text(
-                                          (message.sentAt.toString()),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .caption,
-                                        ),
-                                      ],
+                        SizedBox(width: 45, height: 10),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(11),
+                            ),
+                            child: Consumer<MessageProvider>(
+                                builder: (_, notifier, child) {
+                              // print(notifier.privatechat!.message!.length);
+                              if (notifier.state == NotifierState.loading) {
+                                child = const Center(
+                                  child: SpinKitRotatingCircle(
+                                    color: kPrimaryColor,
+                                  ),
+                                );
+                              } else if (notifier.privatechat != null &&
+                                  notifier.state == NotifierState.loaded) {
+                                child = Padding(
+                                  padding: const EdgeInsets.all(1),
+                                  child: ListView.separated(
+                                    padding: const EdgeInsets.all(16),
+                                    itemCount:
+                                        notifier.privatechat!.message!.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      ChatModel _chat = notifier.privatechat!;
+                                      // for (var message in chat.messagePerson1 ?? [])
+                                      return Wrap(
+                                        alignment:
+                                            _chat.message![index].senderId ==
+                                                    widget.userData.sId
+                                                ? WrapAlignment.end
+                                                : WrapAlignment.start,
+                                        children: [
+                                          Card(
+                                            color: _chat.message![index]
+                                                        .senderId ==
+                                                    widget.userData.sId
+                                                ? kPrimaryColor
+                                                : Colors.white,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment: _chat
+                                                            .message![index]
+                                                            .senderId ==
+                                                        widget.userData.sId
+                                                    ? CrossAxisAlignment.end
+                                                    : CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.5,
+                                                    child: ListTile(
+                                                      title: Column(
+                                                        crossAxisAlignment: (_chat
+                                                                    .message![
+                                                                        index]
+                                                                    .senderId ==
+                                                                widget.userData
+                                                                    .sId)
+                                                            ? CrossAxisAlignment
+                                                                .end
+                                                            : CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          (_chat.message![index]
+                                                                      .image !=
+                                                                  null)
+                                                              ? AspectRatio(
+                                                                  aspectRatio: 16 /
+                                                                      9, // Adjust the aspect ratio as needed
+                                                                  child:
+                                                                      Container(
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              10),
+                                                                      image:
+                                                                          DecorationImage(
+                                                                        image: Image
+                                                                            .network(
+                                                                          "http://localhost:3000/uploads/${_chat.message![index].image}",
+                                                                        ).image, // Replace with your image path
+                                                                        fit: BoxFit
+                                                                            .cover,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                )
+                                                              : Container(),
+                                                          (_chat.message![index]
+                                                                          .message !=
+                                                                      null ||
+                                                                  _chat.message![index]
+                                                                          .message !=
+                                                                      '')
+                                                              ? Padding(
+                                                                  padding: const EdgeInsets
+                                                                          .only(
+                                                                      top: 8.0),
+                                                                  child: Text(
+                                                                    "${_chat.message![index].message}",
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color: _chat.message![index].senderId ==
+                                                                              widget
+                                                                                  .userData.sId
+                                                                          ? Colors
+                                                                              .white
+                                                                          : Colors
+                                                                              .black,
+                                                                    ),
+                                                                  ),
+                                                                )
+                                                              : Container(),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .only(
+                                                                    top: 8.0),
+                                                            child: Text(
+                                                              '${_chat.message![index].sentAt}',
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .black),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                    separatorBuilder: (_, index) =>
+                                        const SizedBox(
+                                      height: 5,
                                     ),
                                   ),
-                                ),
-                              ],
-                            );
-                          },
-                          separatorBuilder: (_, index) => const SizedBox(
-                            height: 5,
+                                );
+                              } else {
+                                child = const Center(child: Text("No data"));
+                              }
+                              return child;
+                            }),
                           ),
-                          itemCount: provider.messages.length,
                         ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 45, height: 10),
-                  Container(
-                    height: 40,
-                    width: MediaQuery.of(context).size.width,
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(width: 10),
-                          IconButton(
-                            onPressed: () {},
-                            icon: SvgPicture.asset('icons/file.svg'),
-                            color: kPrimaryColor,
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                          ),
-                          SizedBox(width: 5),
-                          // place for send message
-                          WriteMessage(
-                            hintText: "Write a message...",
-                            controller: _msgController,
-                            onChanged: (value) {
-                              setStateIfMounted(() {
-                                if (!mounted) {
-                                  print("setter section");
-                                  return;
-                                }
-                                (value.isNotEmpty)
-                                    ? _msgOrVoice = value
-                                    : _msgOrVoice = "";
-                              });
-                            },
-                          ),
-                          SizedBox(width: 5),
-                          IconButton(
-                            onPressed: () {},
-                            icon: Icon(
-                              Icons.emoji_emotions_outlined,
-                              color: kPrimaryColor,
-                            ),
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                          ),
-                          SizedBox(width: 1),
-                          (_msgOrVoice == "")
-                              ? IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(
-                                    Icons.keyboard_voice,
-                                    color: kPrimaryColor,
-                                  ),
-                                  splashColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                )
-                              : IconButton(
-                                  onPressed: () {
-                                    if (!mounted) {
-                                      print("setter section");
-                                      return;
+                        SizedBox(width: 45, height: 10),
+                        Container(
+                          height: 40,
+                          width: MediaQuery.of(context).size.width,
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(width: 10),
+                                IconButton(
+                                  onPressed: () async {
+                                    FilePickerResult? result = await FilePicker
+                                        .platform
+                                        .pickFiles(withReadStream: true);
+                                    setState(() {
+                                      if (result != null) {
+                                        file = result.files.first;
+                                      }
+                                    });
+                                    var response = await sendImage(file!);
+                                    if (response != '') {
+                                      imageName = jsonDecode(response);
+                                      sendMessage(
+                                          _msgController.text, imageName);
                                     }
-                                    sendMessage(_msgController.text);
                                   },
-                                  icon: Icon(
-                                    Icons.send,
-                                    color: kPrimaryColor,
-                                  ),
+                                  icon: SvgPicture.asset('icons/file.svg'),
+                                  color: kPrimaryColor,
                                   splashColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   hoverColor: Colors.transparent,
                                 ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                                SizedBox(width: 5),
+                                // place for send message
+                                WriteMessage(
+                                  hintText: "Write a message...",
+                                  controller: _msgController,
+                                  onChanged: (value) {
+                                    setStateIfMounted(() {
+                                      if (!mounted) {
+                                        print("setter section");
+                                        return;
+                                      }
+                                      (value.isNotEmpty)
+                                          ? _msgOrVoice = value
+                                          : _msgOrVoice = "";
+                                    });
+                                  },
+                                ),
+                                // SizedBox(width: 5),
+                                // IconButton(
+                                //   onPressed: () {},
+                                //   icon: Icon(
+                                //     Icons.emoji_emotions_outlined,
+                                //     color: kPrimaryColor,
+                                //   ),
+                                //   splashColor: Colors.transparent,
+                                //   highlightColor: Colors.transparent,
+                                //   hoverColor: Colors.transparent,
+                                // ),
+                                SizedBox(width: 1),
+                                (_msgOrVoice == "")
+                                    ? IconButton(
+                                        onPressed: () {},
+                                        icon: Icon(
+                                          Icons.keyboard_voice,
+                                          color: kPrimaryColor,
+                                        ),
+                                        splashColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                      )
+                                    : IconButton(
+                                        onPressed: () {
+                                          if (!mounted) {
+                                            print("setter section");
+                                            return;
+                                          }
+                                          sendMessage(
+                                              _msgController.text, imageName);
+                                        },
+                                        icon: Icon(
+                                          Icons.send,
+                                          color: kPrimaryColor,
+                                        ),
+                                        splashColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                      ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(),
             ),
           ),
           SizedBox(width: 20),
@@ -748,7 +922,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                           Padding(
                             padding: const EdgeInsets.all(4.0),
                             child: Text(
-                              "${targetId}",
+                              "${person2Name}",
                               style: TextStyle(
                                 fontSize: 24.0,
                               ),
@@ -767,9 +941,5 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         ],
       ),
     );
-  }
-
-  void setStateIfMounted(f) {
-    if (mounted) setState(f);
   }
 }

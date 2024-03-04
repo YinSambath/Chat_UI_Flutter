@@ -10,7 +10,7 @@ const String ChangePasswordRoutes = "/ChangePassword";
 
 final routes = {
   SplashRoute: (context) => SplashView(),
-  // HomeRoute: (context) => HomePage(),
+  // HomeRoute: (context) => HomePage(userData: null,),
   LoginRoute: (context) => LoginScreen(),
   RegisterRoute: (context) => RegisterScreen(),
   WelcomeRoute: (context) => WelcomeScreen(),

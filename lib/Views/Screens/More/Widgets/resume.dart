@@ -14,11 +14,9 @@ class Resume extends StatefulWidget {
   @override
   State<Resume> createState() => _ResumeState();
 }
-  enum MediaType {
-  image,
-  video,
-  file
-}
+
+enum MediaType { image, video, file }
+
 class _ResumeState extends State<Resume> {
   final backgroundColor = Color.fromRGBO(248, 248, 248, 1);
   final black = Colors.black;
@@ -121,40 +119,51 @@ class _ResumeState extends State<Resume> {
                                     children: [
                                       CircleAvatar(
                                         radius: 100,
-                                        backgroundImage: (_user.userProfile != null) 
-                                                ? Image.network("http://localhost:3000/uploads/${_user.userProfile}").image
-                                                : NetworkImage("https://img.favpng.com/2/21/11/computer-icons-user-profile-user-account-clip-art-png-favpng-gDBjftHWJPTMjttnBiJh9vw96.jpg"),
+                                        backgroundImage: (_user.userProfile !=
+                                                null)
+                                            ? Image.network(
+                                                    "http://localhost:3000/uploads/${_user.userProfile}")
+                                                .image
+                                            : NetworkImage(
+                                                "https://img.favpng.com/2/21/11/computer-icons-user-profile-user-account-clip-art-png-favpng-gDBjftHWJPTMjttnBiJh9vw96.jpg"),
                                       ),
                                       Align(
                                         alignment: Alignment.bottomRight,
-                                        child:
-                                            InkWell(
-                                              child: SvgPicture.asset("icons/plus.svg"),
-                                              onTap: () async {
-                                                FilePickerResult? result = await FilePicker.platform.pickFiles(withReadStream: true);
-                                                setState(() {
-                                                  if (result != null) {
-                                                    file = result.files.first;
-                                                    print(file!.name);
-                                                    // print(file.bytes);
-                                                    print(file!.size);
-                                                    print(file!.extension);
-                                                  } 
-                                                });
-                                                var response = await uploadOrUpdateImage(file!);
-                                                if (response == 200) {
-                                                  Get.snackbar("Success", "You have uploaded new profile.",
-                                                    colorText: Colors.white,
-                                                    snackPosition: SnackPosition.TOP,
-                                                    margin: EdgeInsets.only(left: 1230),
-                                                    maxWidth: 300,
-                                                    backgroundColor: Colors.green,
-                                                    duration: Duration(seconds: 3),
-                                                    overlayColor: kPrimaryColor);
-                                                    Provider.of<UserProvider>(context, listen: false).getDataUser();
-                                                }
-                                              },
-                                              ),
+                                        child: InkWell(
+                                          child: SvgPicture.asset(
+                                              "icons/plus.svg"),
+                                          onTap: () async {
+                                            FilePickerResult? result =
+                                                await FilePicker.platform
+                                                    .pickFiles(
+                                                        withReadStream: true);
+                                            setState(() {
+                                              if (result != null) {
+                                                file = result.files.first;
+                                              }
+                                            });
+                                            var response =
+                                                await uploadOrUpdateImage(
+                                                    file!);
+                                            if (response == 200) {
+                                              Get.snackbar("Success",
+                                                  "You have uploaded new profile.",
+                                                  colorText: Colors.white,
+                                                  snackPosition:
+                                                      SnackPosition.TOP,
+                                                  margin: EdgeInsets.only(
+                                                      left: 1230),
+                                                  maxWidth: 300,
+                                                  backgroundColor: Colors.green,
+                                                  duration:
+                                                      Duration(seconds: 3),
+                                                  overlayColor: kPrimaryColor);
+                                              Provider.of<UserProvider>(context,
+                                                      listen: false)
+                                                  .getDataUser();
+                                            }
+                                          },
+                                        ),
                                       ),
                                     ],
                                   ),
