@@ -673,7 +673,6 @@ class _BodyState extends State<Body> with AutomaticKeepAliveClientMixin {
                                     itemBuilder:
                                         (BuildContext context, int index) {
                                       ChatModel _chat = notifier.privatechat!;
-                                      // for (var message in chat.messagePerson1 ?? [])
                                       return Wrap(
                                         alignment:
                                             _chat.message![index].senderId ==
@@ -719,8 +718,11 @@ class _BodyState extends State<Body> with AutomaticKeepAliveClientMixin {
                                                                 .start,
                                                         children: [
                                                           (_chat.message![index]
-                                                                      .image !=
-                                                                  null)
+                                                                          .image !=
+                                                                      null &&
+                                                                  _chat.message![index]
+                                                                          .image !=
+                                                                      '')
                                                               ? AspectRatio(
                                                                   aspectRatio: 16 /
                                                                       9, // Adjust the aspect ratio as needed
@@ -746,7 +748,7 @@ class _BodyState extends State<Body> with AutomaticKeepAliveClientMixin {
                                                               : SizedBox(),
                                                           (_chat.message![index]
                                                                           .message !=
-                                                                      null ||
+                                                                      null &&
                                                                   _chat.message![index]
                                                                           .message !=
                                                                       '')
