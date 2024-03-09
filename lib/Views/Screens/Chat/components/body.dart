@@ -118,6 +118,7 @@ class _BodyState extends State<Body> with AutomaticKeepAliveClientMixin {
       message,
     );
     _msgController.clear();
+    imageName = '';
   }
 
   handleFilePick() async {
